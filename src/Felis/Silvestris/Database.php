@@ -1,17 +1,20 @@
 <?php
 
 namespace Felis\Silvestris;
+
 use \PDO;
 
 class Database {
-  private $dbhost, $query;
+  private $dbhost, $query = "", $params = [], $data = [];
+  public static $err;
 
   public function __construct($dbh, $uname, $pass){
     try {
       $this->dbhost = new PDO($dbh, $uname, $pass);
       $this->dbhost->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
-      die ("CONNECTION FAILED: ".$e->getMessage());
+    } catch (\PDOException $e) {
+      self::$err = "CONNECTION FAILED: ".$e->getMessage();
+      self::fatal();
     }
   }
 
@@ -19,98 +22,99 @@ class Database {
 
   public function __destruct(){ $this->dbhost = null; }
 
-  /* BASIC CRUD */
-  public function select($table, $fields="*", $optionalClause = ""){
+  public function execute(){
     try {
-      $sql = $this->dbhost->query("SELECT $fields FROM $table $optionalClause;", PDO::FETCH_NUM);
-      $result = $sql->fetchAll(PDO::FETCH_ASSOC);
-      if (!empty($result)) return $result;
-    } catch (PDOException $e) {
-      die($e->getMessage());
+      $stmt = $this->dbhost->prepare($this->query);
+      $stmt->execute($this->params);
+      return true;
+    } catch (\PDOException $e) {
+      self::$err = $e->getMessage();
+      self::fatal();
     }
     return false;
   }
 
-  public function delete($table, $column, $value){
-    $param = ":".$column;
+  public function fetch($fetchAll = false){
     try {
-      $sql = $this->dbhost->prepare("DELETE FROM $table WHERE $column = '$value';");
-      $sql->bindParam($param, $value);
-      $sql->execute();
-      return true;
-    } catch (PDOException $e) {
-      die($e->getMessage());
+      $stmt = $this->dbhost->prepare($this->query);
+      if (!empty($this->params)) $stmt->execute($this->params);
+      else $stmt->execute();
+      if (!$fetchAll) $this->data = $stmt->fetch(PDO::FETCH_OBJ);
+      else $this->data = $stmt->fetchAll(PDO::FETCH_OBJ);
+    } catch (\PDOException $e) {
+      self::$err = $e->getMessage();
+      self::fatal();
     }
+    return $this;
+  }
+
+  public function toJson(){
+    $this->data = json_encode($this->data);
+    return $this;
+  }
+
+  public function get(){
+    $data = $this->data;
+    if (!empty($data)) return $data;
+    else if (is_string($data) && strlen($this->data) != 2) return 'false';
     return false;
+  }
+
+  public function setParam($column){
+    return ':'.str_replace(str_split('\'"`[] '), '', $column);
+  }
+
+  public function select($table, $fields="*"){
+    $this->query = "SELECT {$fields} FROM {$table}";
+    return $this;
+  }
+
+  public function where($conditions = [], $optionalClauses = ""){
+    $whereClauses = ""; $i = 0;
+    foreach ($conditions as $column => $clause) {
+      $bindKey = $this->setParam($column);
+      $this->params[$bindKey] = array_values($clause)[$i];
+      $condition = $column.array_keys($clause)[0].array_keys($this->params)[$i]." AND ";
+      $whereClauses .= $condition;
+    }
+    $whereClauses = substr($whereClauses, 0, strrpos($whereClauses , ' AND '));
+    $this->query .= " WHERE {$whereClauses} {$optionalClauses}";
+    return $this;
   }
 
   public function insert($tabel, $fields = array()){
-    $value = array(); $paramKey = array(); $i = 0;
-    $kolom = implode(",", array_keys($fields));
-    foreach ($fields as $key => $val) {
-      $paramKey[$i] = ':'.str_replace(str_split('`[] '), '', $key);
-      $value[$i] = $val; $i++;
+    $columns = implode(", ", array_keys($fields));
+    foreach ($fields as $column => $value) {
+      $bindKey = $this->setParam($column);
+      $this->params[$bindKey] = $value;
     }
-    $params = implode(",", $paramKey); $i = 0;
-    try {
-      $sql = $this->dbhost->prepare("INSERT INTO $tabel ($kolom) VALUES ($params);");
-      foreach ($paramKey as $param) {
-        $sql->bindParam($param, $value[$i]); $i++;
-      }
-      $sql->execute();
-      return true;
-    } catch (PDOException $e) {
-      die($e->getMessage());
-    }
-    return false;
+    $paramStr = implode(", ", array_keys($this->params));
+    $this->query = "INSERT INTO {$tabel} ({$columns}) VALUES ({$paramStr});";
+    return $this->execute();
+  }
+
+  public function delete($table, $column, $value){
+    $this->params[$this->setParam($column)] = $value;
+    $this->query = "DELETE FROM {$table} WHERE {$column} = '{$value}';";
+    return $this->execute();
   }
 
   public function update($table, $column, $value, $set = array()){
-    $paramKey = array(); $result = ""; $i = 0;
-    foreach($set as $key => $val){
-      $paramKey[$i] = ':'.str_replace(str_split('`[] '), '', $key);
-      $setString = $key.'='.$paramKey[$i].',';
-      $result .= $setString;
-      $i++;
+    $setResult = "";
+    foreach($set as $setColumn => $setValue){
+      $bindKey = $this->setParam($setColumn);
+      $this->params[$bindKey] = $setValue;
+      $setString = $setColumn.' = '.$bindKey.', ';
+      $setResult .= $setString;
     }
-    $result = substr($result, 0, strrpos($result , ',')); $i = 0;
-    try {
-      $sql = $this->dbhost->prepare("UPDATE $table SET $result WHERE $column = '$value';");
-      foreach ($set as $val) {
-        $sql->bindValue($paramKey[$i], $val); $i++;
-      }
-      $sql->execute();
-      return true;
-    } catch (PDOException $e) {
-      die($e->getMessage());
-    }
-    return false;
+    $setResult = substr($setResult, 0, strrpos($setResult , ','));
+    $this->query = "UPDATE {$table} SET {$setResult} WHERE {$column} = '{$value}';";
+    return $this->execute();
   }
 
-  public function get($table, $conditions = [], $fields="*", $fetchAll = false, $optionalClause = ''){
-    $paramKey = array(); $resultConditions = ""; $i = 0;
-    foreach ($conditions as $column => $value) {
-      $paramKey[$i] = ':'.str_replace(str_split('!=`[]<> '), '', $column);
-      $conString = $column.$paramKey[$i]." AND ";
-      $resultConditions .= $conString;
-      $i++;
-    }
-    $resultConditions = substr($resultConditions, 0, strrpos($resultConditions , ' AND ')); $i = 0;
-    try {
-      $sql = $this->dbhost->prepare("SELECT $fields FROM $table WHERE $resultConditions $optionalClause;");
-      foreach ($conditions as $val) {
-        $sql->bindValue($paramKey[$i], $val); $i++;
-      }
-      $sql->execute();
-      if (!$fetchAll) $result = $sql->fetch(PDO::FETCH_ASSOC);
-      else $result = $sql->fetchAll(PDO::FETCH_ASSOC);
-      if (!empty($result)) return $result;
-    } catch (PDOException $e) {
-      die($e->getMessage());
-    }
-    return false;
+  public static function fatal(){
+    die(self::$err);
   }
-  /* END BASIC CRUD */
-
+  
 }
 ?>
