@@ -1,0 +1,16 @@
+{
+    "name": "itpolsri/felis",
+    "description": "Mini Framework PHP",
+    "authors": [
+        {
+            "name": "IT Polsri",
+            "email": "itpolsri@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+      "psr-4":{
+        "Felis\\": "src/Felis/"
+      }
+    }
+}
