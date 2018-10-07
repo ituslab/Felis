@@ -84,7 +84,7 @@ print_r($data); //return data
 
 #### `Query builder execute() Example`
 ```
-$query = $db->query("DELETE * FROM users WHERE id = 1");
+$query = $db->query("DELETE FROM users WHERE id = 1");
 $exec = $query->execute(); //use execute() to execute a query
 print_r($exec); return true or false
 ```
