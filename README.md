@@ -69,7 +69,7 @@ $update = $db->update('users', 'userid', 2, [
 var_dump($update); //return true or false
 ```
 
-#### `Update Example`
+#### `Delete Example`
 ```
 $delete = $db->delete('users', 'userid', 2);
 var_dump($delete); //return true or false
