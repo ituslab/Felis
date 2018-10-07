@@ -86,7 +86,7 @@ print_r($data); //return data
 ```
 $query = $db->query("DELETE FROM users WHERE id = 1");
 $exec = $query->execute(); //use execute() to execute a query
-print_r($exec); return true or false
+var_dump($exec); return true or false
 ```
 
 
