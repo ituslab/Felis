@@ -1,10 +1,7 @@
 <?php
   require_once __DIR__ .'/vendor/autoload.php';
 
-  use Felis\Silvestris\Database;
+  use Felis\Silvestris\Database as DB;
 
-  $db = new Database('mysql:host=localhost;dbname=HaruptDB', 'root', 'mysql');
-  $sql = $db->delete('users', 'id', 11);
-
-  var_dump($sql);
+  $db = DB::connect('mysql');
 ?>

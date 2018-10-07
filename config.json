@@ -1,0 +1,12 @@
+{
+  "mysql" : {
+    "dbh"       : "mysql:hostname = localhost; dbname=ElogDB;",
+    "user"      : "root",
+    "password"  : "mysql"
+  },
+  "sqlserver" : {
+    "dbh"       : "sqlsrv:server = localhost; database= TruckScaleDB;",
+    "user"      : "sa",
+    "password"  : "SqlServer18"
+  }
+}
