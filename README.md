@@ -1,4 +1,4 @@
-## How to USE
+## How to Use (Silvestris Database and Pagination Server Side)
 
 ### Create your own config.json in your root project directory like this.
 ```
@@ -90,4 +90,47 @@ var_dump($exec); return true or false
 ```
 
 
-##### Silvestris Pagination documentation will come soon
+## How to Use (Silvestris Paging Client ES6 imports)
+
+
+Source code:
+ [Github](https://github.com/itpolsri/SilvestrisPagingClient)
+
+
+Install it via [npm](https://www.npmjs.com/package/@itpolsri/felis-silvestris-paging) `npm i @itpolsri/felis-silvestris-paging`
+
+import modules   
+`import { requestPage } from "@itpolsri/felis-silvestris-paging";`
+
+define your html elements for paging
+```
+const htmlEltOpts = {
+    pageElContainerId: '#page-el-container',
+    tBodyId: '#tbody',
+    pageElChildClassName: 'page-el-child'
+}
+```
+
+call our method `requestPage(...)`
+```
+requestPage('YOUR_SILVESTRIS_PAGING_ENDPOINT','SILVESTRIS_QUERY_STRING_NAME',
+    SILVESTRIS_QUERY_STRING_VALUE,
+    htmlEltOpts,
+    err=>{
+        console.error(err)
+    }
+)
+```
+
+example:
+```
+requestPage('http://localhost:8080/Paging/api.php','page',
+    1,
+    htmlEltOpts,
+    err=>{
+        console.error(err)
+    }
+)
+```
+
+
