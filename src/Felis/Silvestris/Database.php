@@ -41,14 +41,6 @@ class Database {
     return false;
   }
 
-  private function setParam($column){
-    return ':'.str_replace(str_split('\'"`[] '), '', $column);
-  }
-
-  private function removeLastString($string, $stringToDelete){
-    return substr($string, 0, strrpos($string, $stringToDelete));
-  }
-
   public function query($query){
     $this->query = $query;
     return $this;
@@ -103,7 +95,7 @@ class Database {
     return $this->execute();
   }
 
-  private function execute(){
+  public function execute(){
     try {
       $stmt = $this->dbh->prepare($this->query);
       if (!empty($this->params)) $stmt->execute($this->params);
@@ -139,7 +131,15 @@ class Database {
     return $this;
   }
 
-  public static function fatal($error){
+  private function setParam($column){
+    return ':'.str_replace(str_split('\'"`[] '), '', $column);
+  }
+
+  private function removeLastString($string, $stringToDelete){
+    return substr($string, 0, strrpos($string, $stringToDelete));
+  }
+
+  private static function fatal($error){
     die($error);
   }
 
