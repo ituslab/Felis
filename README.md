@@ -25,19 +25,19 @@ $db = DB::connect('mysql');
 
 #### `Select Example 1`
 ```
-$data = $db->select('users')->fetch(true)->get(); // select all fields from 'users' table
+$data = $db->select('users')->fetchAll()->get(); // select all fields from 'users' table
 print_r($data);
 ```
 
 #### `Select Example 2`
 ```
-$data = $db->select('users', 'name')->fetch(true)->get(); // select 'name' field from 'users' table
+$data = $db->select('users', 'name')->fetchAll()->get(); // select 'name' field from 'users' table
 print_r($data);
 ```
 
 #### `Select Example 3`
 ```
-$data = $db->select('users')->fetch(true)->toJson()->get(); // return JSON data
+$data = $db->select('users')->fetchAll()->toJson()->get(); // return JSON data
 print_r($data);
 ```
 
@@ -47,7 +47,7 @@ $select = $db->select('users')->where([
   'name' => ['LIKE' => '%John%'],
   'job' => ['=' => 'Developer']
 ]);
-$data = $select->fetch(true)->get();
+$data = $select->fetchAll()->get();
 print_r($data);
 ```
 
@@ -78,7 +78,7 @@ var_dump($delete); //return true or false
 #### `Query builder fetch() data Example`
 ```
 $query = $db->query("SELECT * FROM users WHERE id = 1");
-$data = $query->fetch()->get(); //use fetch() to return a data
+$data = $query->fetch()->get(); //use fetch() to fetch data to object and get() to get data
 print_r($data); //return data
 ```
 
@@ -132,5 +132,3 @@ requestPage('http://localhost:8080/Paging/api.php','page',
     }
 )
 ```
-
-
