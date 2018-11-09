@@ -4,12 +4,16 @@
    */
   namespace Felis\Silvestris;
 
-  \session_start();
-  
+  session_start();
+
   class Session {
 
-    public static function set($key, $value){
-      $_SESSION[$key] = $value;
+    public static function set($set, $value = 0){
+      if (is_array($set)) {
+        foreach ($set as $key => $val) $_SESSION[$key] = $val;
+        return;
+      }
+      $_SESSION[$set] = $value;
     }
 
     public static function get($key){
@@ -23,7 +27,7 @@
       return $_SESSION;
     }
 
-    public function unset($key){
+    public static function unset($key){
       if (isset($_SESSION[$key])) {
         unset($_SESSION[$key]);
         return true;
@@ -32,7 +36,7 @@
     }
 
     public static function destroy(){
-      return \session_destroy();
+      return session_destroy();
     }
 
   }

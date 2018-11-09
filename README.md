@@ -77,7 +77,9 @@ var_dump($delete); //return true or false
 
 #### `Query builder fetch() data Example`
 ```
-$query = $db->query("SELECT * FROM users WHERE id = 1");
+$query = $db->query("SELECT * FROM users WHERE id = :id", [
+  ':id' => 1
+]);
 $data = $query->fetch()->get(); //use fetch() to fetch data to object and get() to get data
 print_r($data); //return data
 ```

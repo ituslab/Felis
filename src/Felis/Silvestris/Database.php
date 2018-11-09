@@ -11,7 +11,7 @@ class Database {
     try {
       $this->dbh = new PDO($dbh, $uname, $pass);
       $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
       self::fatal("CONNECTION FAILED: ".$e->getMessage());
     }
   }
@@ -41,8 +41,9 @@ class Database {
     return false;
   }
 
-  public function query($query){
+  public function query($query, $params = []){
     $this->query = $query;
+    $this->params = $params;
     return $this;
   }
 
@@ -101,7 +102,7 @@ class Database {
       if (!empty($this->params)) $stmt->execute($this->params);
       else $stmt->execute();
       return true;
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
       self::fatal($e->getMessage());
     }
     return false;
@@ -113,7 +114,7 @@ class Database {
       if (!empty($this->params)) $stmt->execute($this->params);
       else $stmt->execute();
       $this->data = $stmt->fetch(PDO::FETCH_OBJ);
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
       self::fatal($e->getMessage());
     }
     return $this;
@@ -125,7 +126,7 @@ class Database {
       if (!empty($this->params)) $stmt->execute($this->params);
       else $stmt->execute();
       $this->data = $stmt->fetchAll(PDO::FETCH_OBJ);
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
       self::fatal($e->getMessage());
     }
     return $this;
