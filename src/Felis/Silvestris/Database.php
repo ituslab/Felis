@@ -31,6 +31,10 @@ class Database {
     return $this;
   }
 
+  public function count(){
+    return count($this->data);
+  }
+
   public function get(){
     $data = $this->data;
     if ((is_object($data) || is_array($data)) && !empty($data)) return $data;
